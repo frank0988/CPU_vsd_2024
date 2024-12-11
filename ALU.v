@@ -1,7 +1,11 @@
+// Jonathan is a chick
+// Frank is a dog
+// fuck
+`include "const.svh"
 module ALU (
-    input [4:0] opcode,
+    input [6:0] opcode,
     input [2:0] func3,
-    input func7,
+    input [6:0] func7,
     input [31:0] operand1,
     input [31:0] operand2,
     output reg [31:0] alu_out
@@ -9,84 +13,92 @@ module ALU (
     always @(*)
     begin
         case (opcode)
-            5'b01100:       //1
-            begin
+            `OP_I:begin
                 case (func3)
-                    3'b000:
-                    begin
+                    `ADDI_func3:alu_out = operand1 + operand2;
+                    `SLTI_func3:alu_out=($signed(operand1) < $signed(operand2))?32'b1:32'b0;
+                    `SLTIU_func3:alu_out = (operand1 < operand2)?32'b1:32'b0;
+                    `XORI_func3:alu_out = operand1 ^ operand2;
+                    `ORI_func3:alu_out = operand1 | operand2;
+                    `ANDI_func3:alu_out = operand1 & operand2;
+                    `SLLI_func3:alu_out = operand1 << operand2[4:0];
+                    `SRLI_func3:begin
                         case (func7)
-                        1'b0:alu_out = operand1 + operand2;
-                        1'b1:alu_out = operand1 - operand2;
+                        7'b0100000:alu_out = operand1 >> operand2[4:0];
+                        7'b0000000:alu_out = $signed(operand1) >>> operand2[4:0];
                         endcase
                     end
-                    3'b001:alu_out = operand1 << operand2[4:0];
-                    3'b010:alu_out = ($signed(operand1) < $signed(operand2))?32'b1:32'b0;
-                    3'b011:alu_out = (operand1 < operand2)?32'b1:32'b0;
-                    3'b100:alu_out = operand1 ^ operand2;
-                    3'b101:
-                    begin
-                        case (func7)
-                        1'b0:alu_out = operand1 >> operand2[4:0];
-                        1'b1:alu_out = $signed(operand1) >>> operand2[4:0];
-                        endcase
-                    end
-                    3'b110:alu_out = operand1 | operand2;
-                    3'b111:alu_out = operand1 & operand2;
-                endcase
-            end
-            5'b00100:       //2
-            begin
-                case (func3)
-                    3'b000:alu_out = operand1 + operand2;
-                    3'b010:alu_out = ($signed(operand1) < $signed(operand2))?32'b1:32'b0;
-                    3'b011:alu_out = (operand1 < operand2)?32'b1:32'b0;
-                    3'b100:alu_out = operand1 ^ operand2;
-                    3'b110:alu_out = operand1 | operand2;
-                    3'b111:alu_out = operand1 & operand2;
-                    3'b001:alu_out = operand1 << operand2[4:0];
-                    3'b101:
-                    begin
-                        case (func7)
-                        1'b0:alu_out = operand1 >> operand2[4:0];
-                        1'b1:alu_out = $signed(operand1) >>> operand2[4:0];
-                        endcase
+                    default:begin  
+                        alu_out=32'b0;
                     end
                 endcase
             end
-            5'b01101:       //3
-            begin
-                alu_out = operand2;
-            end
-            5'b00101:       //4
-            begin
-                alu_out = operand1 + operand2;
-            end
-            5'b00000:       //5
-            begin
-                alu_out = operand1 + operand2;
-            end
-            5'b01000:       //6
-            begin
-                alu_out = operand1 + operand2;
-            end
-            5'b11011:       //7
-            begin
-                alu_out = operand1 + 4;
-            end
-            5'b11001:       //8
-            begin
-                alu_out = operand1 + 4;
-            end
-            5'b11000:       //9
-            begin
+            `OP_R:begin
                 case (func3)
-                    3'b000:alu_out = ($signed(operand1) == $signed(operand2))?32'b1:32'b0;
-                    3'b001:alu_out = ($signed(operand1) != $signed(operand2))?32'b1:32'b0;
-                    3'b100:alu_out = ($signed(operand1) < $signed(operand2))?32'b1:32'b0;
-                    3'b101:alu_out = ($signed(operand1) >= $signed(operand2))?32'b1:32'b0;
-                    3'b110:alu_out = (operand1 < operand2)?32'b1:32'b0;
-                    3'b111:alu_out = (operand1 >= operand2)?32'b1:32'b0;
+                    `ADDI_func3:begin
+                        case (func7)
+                            7'b0000000:alu_out = operand1 + operand2;
+                            7'b0100000:alu_out = operand1 - operand2;
+                        endcase
+                        end
+                    `ADD_func3:alu_out = operand1 << operand2[4:0];
+                    `SUB_func3:alu_out = ($signed(operand1) < $signed(operand2))?32'b1:32'b0;
+                    `SLL_func3:alu_out = (operand1 < operand2)?32'b1:32'b0;
+                    `XOR_func3:alu_out = operand1 ^ operand2;
+                    `SRL_func3:begin
+                        case (func7)
+                        7'b0000000:alu_out = operand1 >> operand2[4:0];
+                        7'b0100000:alu_out = $signed(operand1) >>> operand2[4:0];
+                        endcase
+                    end
+                    `OR_func3:alu_out = operand1 | operand2;
+                    `AND_func3:alu_out = operand1 & operand2;
+                    default:begin  
+                        alu_out=32'b0;
+                    end
                 endcase
+            end
+           `OP_B:begin
+                case(func3)
+                    `BEQ_func3:alu_out=(operand1 == operand2)?`TRUE:`FALSE;
+                    `BNE_func3:alu_out=(operand1 == operand2)?`FALSE:`TRUE;
+                    `BLT_func3:alu_out=($signed(operand1) <$signed(operand2))?`TRUE:`FALSE;  
+                    `BGE_func3:alu_out=($signed(operand1) >=$signed(operand2))?`TRUE:`FALSE; 
+                    `BLTU_func3:alu_out=(operand1<operand2)?`TRUE:`FALSE;  
+                    `BGEU_func3:alu_out=(operand1>operand2)?`TRUE:`FALSE;
+                    default:begin  
+                        alu_out=32'b0;
+                    end   
+                endcase
+           end
+            `OP_L:begin
+                case (func3)
+                    `LB_func3:alu_out=operand1+operand2;
+                    `LH_func3:alu_out=operand1+operand2;
+                    `LW_func3:alu_out=operand1+operand2;
+                    `LBU_func3:alu_out=operand1+operand2;
+                    `LHU_func3:alu_out=operand1+operand2;
+                    default:begin  
+                        alu_out=32'b0;
+                    end
+                endcase
+            end
+            `OP_S:begin
+                case(func3)
+                    `SB_func3:alu_out=operand1+operand2;
+                    `SH_func3:alu_out=operand1+operand2;
+                    `SW_func3:alu_out=operand1+operand2;
+                    default:begin  
+                        alu_out=32'b0;
+                    end
+                endcase
+            end
+            `LUI:alu_out={operand2[31:12],12'b0};
+            `AUIPC:alu_out=operand1+{operand2[31:12],12'b0};
+            `JAL:alu_out=operand1+32'd4;
+            `JALR:alu_out=operand1+32'd4;
+            default:begin  
+                alu_out=32'b0;
             end
         endcase
     end

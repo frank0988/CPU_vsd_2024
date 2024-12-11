@@ -18,6 +18,12 @@ module SRAM (
                 mem[address + 1][7:0] <= write_data[15:8];
                 mem[address][7:0] <= write_data[7:0];
             end
+            4'b0111:
+            begin
+                mem[address + 2][7:0] <= write_data[23:16];
+                mem[address + 1][7:0] <= write_data[15:8];
+                mem[address][7:0] <= write_data[7:0];
+            end
             4'b1111:
             begin
                 mem[address + 3][7:0] <= write_data[31:24];
